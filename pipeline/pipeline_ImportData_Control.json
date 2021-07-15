@@ -1,0 +1,117 @@
+{
+	"name": "pipeline_ImportData_Control",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup Staging Row Count",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[SalesLT].[usp_GetRowCountProductStaging]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ProductStaging",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Actions on Stagin Row Count",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup Staging Row Count",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Lookup Staging Row Count').output.firstRow.RowCount, 0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Truncate Staging Table",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[SalesLT].[usp_TruncateProductStaging]"
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSql_rsadfsqldbazsqldb",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Import Data",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Truncate Staging Table",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline_ImportData",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"EmailTo": "s.ranganath@dxc.com"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Import Data on True",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline_ImportData",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"EmailTo": "s.ranganath@dxc.com"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-07-14T11:31:11Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
