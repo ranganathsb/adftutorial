@@ -1,0 +1,9 @@
+{
+	"name": "rsadfadf1",
+	"location": "EAST US 2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "17567225-e7d0-4331-a90d-e868b515901c",
+		"tenantId": "61fa5edd-4eea-4233-ad8b-831b9b781384"
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"name": "rsadfAzureKeyVault",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://rsadf-tutorial.vault.azure.net/"
+		}
+	}
+}
